@@ -6,3 +6,7 @@ module "jenkins"{
     jenkins_instance_type = var.jenkins_instance_type
     jenkins_ssh_key = var.jenkins_ssh_key
 }
+
+module "ecr"{
+    source = "./modules/ecr"
+}
