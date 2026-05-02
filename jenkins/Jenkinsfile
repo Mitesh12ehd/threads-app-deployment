@@ -1,0 +1,28 @@
+pipeline{
+    agent any
+    stages{
+        stage("Build and push image"){
+            environment{
+                DOCKER_REPO_URI = "372641111498.dkr.ecr.ap-south-1.amazonaws.com"
+                DOCKER_REPO_NAME = "thread-app"
+                IMAGE_NAME = "thread-app-${BUILD_NUMBER}"
+                FULL_IMAGE_NAME = "${DOCKER_REPO}:${IMAGE_NAME}"
+            }
+            steps{
+                script{
+                    echo "Build the docker image......."
+                    sh "docker build -t ${FULL_IMAGE_NAME} -f docker/Dockerfile ."
+                    
+                    echo "Tag the image......."
+                    sh "docker tag ${FULL_IMAGE_NAME} ${DOCKER_REPO_URI}/${FULL_IMAGE_NAME}"
+
+                    echo "Docker login......."
+                    sh "aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin ${DOCKER_REPO_URI}"
+
+                    echo "Push image into repository......."
+                    sh "docker push ${DOCKER_REPO_URI}/${FULL_IMAGE_NAME}"
+                }
+            }
+        }
+    }
+}
