@@ -1,0 +1,20 @@
+---
+- name: Install AWS CLI and kubectl inside jenkins container
+  hosts: jenkins_server
+  become: true
+  tasks:
+    - name: Wait for jenkins container to be ready 
+      ansible.builtin.command:
+        cmd: docker exec jenkins echo "ready"
+      register: result
+      retries: 10
+      delay: 5
+      until: result.rc == 0 # stop when exit code is 0 (success)
+
+    - name: Install AWS CLI inside jenkins container
+      ansible.builtin.command:
+        cmd: docker exec jenkins bash -c "apt-get update && apt-get install -y docker.io awscli"
+
+    - name: Install kubectl inside jenkins container
+      ansible.builtin.command:
+        cmd: docker exec jenkins bash -c "curl -LO https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl"
