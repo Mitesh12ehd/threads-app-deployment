@@ -1,9 +1,28 @@
 pipeline{
     agent any
+    environment{
+        DOCKER_REPO_URI = "372641111498.dkr.ecr.ap-south-1.amazonaws.com"
+    }
     stages{
+        stage("Login into ECR repository"){
+            steps{
+                script{
+                    echo "Login into ECR repository......."
+
+                    withCredentials([usernamePassword(
+                        credentialsId: 'aws-credential',
+                        usernameVariable: 'AWS_ACCESS_KEY_ID',
+                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                    )]){
+                        sh "export AWS_DEFAULT_REGION=ap-south-1"
+                        sh "export AWS_DEFAULT_OUTPUT=json"
+                        sh "aws ecr get-login-password | docker login --username AWS --password-stdin ${DOCKER_REPO_URI}"
+                    }
+                }
+            }
+        }
         stage("Build and push image"){
             environment{
-                DOCKER_REPO_URI = "372641111498.dkr.ecr.ap-south-1.amazonaws.com"
                 DOCKER_REPO_NAME = "thread-app"
                 IMAGE_NAME = "thread-app-${BUILD_NUMBER}"
                 FULL_IMAGE_NAME = "${DOCKER_REPO_NAME}:${IMAGE_NAME}"
@@ -15,9 +34,6 @@ pipeline{
                     
                     echo "Tag the image......."
                     sh "docker tag ${FULL_IMAGE_NAME} ${DOCKER_REPO_URI}/${FULL_IMAGE_NAME}"
-
-                    echo "Docker login......."
-                    sh "aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin ${DOCKER_REPO_URI}"
 
                     echo "Push image into repository......."
                     sh "docker push ${DOCKER_REPO_URI}/${FULL_IMAGE_NAME}"
