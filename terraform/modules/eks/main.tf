@@ -33,7 +33,7 @@ module "eks" {
     version = "20.14.0"
 
     cluster_name = "thread-app-eks-cluster"
-    cluster_version = "1.29"
+    cluster_version = "1.30"
 
     vpc_id = module.vpc.vpc_id
     subnet_ids = module.vpc.private_subnets
@@ -62,6 +62,10 @@ module "eks" {
 
             update_config = {
                 max_unavailable_percentage = 50
+            }
+
+            iam_role_additional_policies = {
+                ecr_read = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
             }
 
             labels = {
