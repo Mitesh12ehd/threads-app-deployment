@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: thread-app
-        image: 372641111498.dkr.ecr.ap-south-1.amazonaws.com/thread-app:thread-app-7
+        image: PLACEHOLDER_IMAGE #372641111498.dkr.ecr.ap-south-1.amazonaws.com/thread-app:thread-app-7
         ports:
         - containerPort: 3000
         env:

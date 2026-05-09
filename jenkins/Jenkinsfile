@@ -76,8 +76,19 @@ pipeline{
                             --from-literal=MONGODB_URL="${MONGODB_URL}" \
                             --dry-run=client -o yaml | kubectl apply --namespace ${NAMESPACE} -f -
 
-                        echo "Create deployments and external service"
+                        echo "Create deployments with dummy image"
                         kubectl apply --namespace ${NAMESPACE} -f kubernetes/thread-app-deployment.yaml
+
+                        echo "Update image in deployment"
+                        kubectl set image deployment/thread-app-deployment \
+                            thread-app=${DOCKER_REPO_URI}/${FULL_IMAGE_NAME} \
+                            --namespace ${NAMESPACE}
+
+                        echo "Waiting for rollout across all the pods"
+                        kubectl rollout status deployment/thread-app-deployment \
+                            --namespace ${NAMESPACE}
+
+                        echo "Create external service"
                         kubectl apply --namespace ${NAMESPACE} -f kubernetes/thread-app-service.yaml
 
                         echo "Check deployment and services"
