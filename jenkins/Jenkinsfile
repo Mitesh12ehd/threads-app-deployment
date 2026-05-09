@@ -2,6 +2,9 @@ pipeline{
     agent any
     environment{
         DOCKER_REPO_URI = "372641111498.dkr.ecr.ap-south-1.amazonaws.com"
+        DOCKER_REPO_NAME = "thread-app"
+        IMAGE_NAME = "thread-app-${BUILD_NUMBER}"
+        FULL_IMAGE_NAME = "${DOCKER_REPO_NAME}:${IMAGE_NAME}"
     }
     stages{
         stage("Login into ECR repository"){
@@ -22,11 +25,6 @@ pipeline{
             }
         }
         stage("Build and push image"){
-            environment{
-                DOCKER_REPO_NAME = "thread-app"
-                IMAGE_NAME = "thread-app-${BUILD_NUMBER}"
-                FULL_IMAGE_NAME = "${DOCKER_REPO_NAME}:${IMAGE_NAME}"
-            }
             steps{
                 script{
                     echo "Build the docker image......."
