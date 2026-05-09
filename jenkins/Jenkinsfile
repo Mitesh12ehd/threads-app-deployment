@@ -41,13 +41,22 @@ pipeline{
             }
         }
         stage("Deploy application on kubernetes"){
+            environment{
+                NAMESPACE = "thread-app-ns"
+            }
             steps{
                 script{
-                    withCredentials([usernamePassword(
-                        credentialsId: 'aws-credential',
-                        usernameVariable: 'AWS_ACCESS_KEY_ID',
-                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
-                    )]){
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: 'aws-credential',
+                            usernameVariable: 'AWS_ACCESS_KEY_ID',
+                            passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                        ),
+                        string(credentialsId: 'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY', variable: 'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY'),
+                        string(credentialsId: 'CLERK_SECRET_KEY', variable: 'CLERK_SECRET_KEY'),
+                        string(credentialsId: 'NEXT_CLERK_WEBHOOK_SECRET', variable: 'NEXT_CLERK_WEBHOOK_SECRET'),
+                        string(credentialsId: 'MONGODB_URL', variable: 'MONGODB_URL')
+                    ]){
                         sh '''
                         export AWS_DEFAULT_REGION=ap-south-1
                         export AWS_DEFAULT_OUTPUT=json
@@ -55,8 +64,25 @@ pipeline{
                         echo "Connecting with eks cluster....."
                         aws eks update-kubeconfig --name thread-app-eks-cluster
 
-                        echo "Creating secret component...."
-                        kubectl get nodes
+                        echo "Create namespace"
+                        kubectl create namespace ${NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
+
+                        echo "Creating secret component"
+                        kubectl create secret generic thread-app-secrets \
+                            --namespace ${NAMESPACE} \
+                            --from-literal=NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}" \
+                            --from-literal=CLERK_SECRET_KEY="${CLERK_SECRET_KEY}" \
+                            --from-literal=NEXT_CLERK_WEBHOOK_SECRET="${NEXT_CLERK_WEBHOOK_SECRET}" \
+                            --from-literal=MONGODB_URL="${MONGODB_URL}" \
+                            --dry-run=client -o yaml | kubectl apply --namespace ${NAMESPACE} -f -
+
+                        echo "Create deployments and external service"
+                        kubectl apply --namespace ${NAMESPACE} -f kubernetes/thread-app-deployment.yaml
+                        kubectl apply --namespace ${NAMESPACE} -f kubernetes/thread-app-service.yaml
+
+                        echo "Check deployment and services"
+                        kubectl get deployments --namespace ${NAMESPACE}
+                        kubectl get services --namespace ${NAMESPACE}
                         '''
                     }
                 }
