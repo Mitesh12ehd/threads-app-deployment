@@ -3,10 +3,22 @@ pipeline{
     environment{
         DOCKER_REPO_URI = "372641111498.dkr.ecr.ap-south-1.amazonaws.com"
         DOCKER_REPO_NAME = "thread-app"
-        IMAGE_NAME = "thread-app-${BUILD_NUMBER}"
-        FULL_IMAGE_NAME = "${DOCKER_REPO_NAME}:${IMAGE_NAME}"
     }
     stages{
+        stage("Read app version to attach as image tag"){
+            steps{
+                script{
+                    APP_VERSION = sh(
+                        script: "node -p \"require('./application/package.json').version\"",
+                        returnStdout: true
+                    ).trim()
+
+                    echo "Application Version: ${APP_VERSION}"
+                    env.IMAGE_TAG = "${APP_VERSION}-${BUILD_NUMBER}"
+                    env.IMAGE_NAME = "${DOCKER_REPO_NAME}:${IMAGE_TAG}"
+                }
+            }
+        }
         stage("Login into ECR repository"){
             steps{
                 script{
@@ -28,13 +40,13 @@ pipeline{
             steps{
                 script{
                     echo "Build the docker image......."
-                    sh "docker build -t ${FULL_IMAGE_NAME} -f docker/Dockerfile ."
+                    sh "docker build -t ${IMAGE_NAME} -f docker/Dockerfile ."
                     
                     echo "Tag the image......."
-                    sh "docker tag ${FULL_IMAGE_NAME} ${DOCKER_REPO_URI}/${FULL_IMAGE_NAME}"
+                    sh "docker tag ${IMAGE_NAME} ${DOCKER_REPO_URI}/${IMAGE_NAME}"
 
                     echo "Push image into repository......."
-                    sh "docker push ${DOCKER_REPO_URI}/${FULL_IMAGE_NAME}"
+                    sh "docker push ${DOCKER_REPO_URI}/${IMAGE_NAME}"
                 }
             }
         }
@@ -79,7 +91,7 @@ pipeline{
 
                         echo "Update image in deployment"
                         kubectl set image deployment/thread-app-deployment \
-                            thread-app=${DOCKER_REPO_URI}/${FULL_IMAGE_NAME} \
+                            thread-app=${DOCKER_REPO_URI}/${IMAGE_NAME} \
                             --namespace ${NAMESPACE}
 
                         echo "Waiting for rollout across all the pods"
