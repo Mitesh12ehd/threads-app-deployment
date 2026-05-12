@@ -18,3 +18,11 @@
     - name: Install kubectl inside jenkins container
       ansible.builtin.command:
         cmd: docker exec jenkins bash -c "curl -LO https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl"
+
+- name: Install NodeJS
+  hosts: jenkins_server
+  become: true
+  tasks:  
+    - name: Install nodejs inside jenkins container
+      ansible.builtin.command:
+        cmd: docker exec jenkins bash -c "curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs"
