@@ -11,8 +11,14 @@ module "jenkins"{
 
 module "ecr"{
     source = "./modules/ecr"
+    ecr_repo_name = var.ecr_repo_name
 }
 
 module "eks" {
     source = "./modules/eks"
+    cluster_name = var.cluster_name
+    node_group_instance_type = var.node_group_instance_type
+    min_size = var.min_size
+    max_size = var.max_size
+    desired_size = var.desired_size
 }

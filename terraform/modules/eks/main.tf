@@ -32,7 +32,7 @@ module "eks" {
     source  = "terraform-aws-modules/eks/aws"
     version = "20.14.0"
 
-    cluster_name = "thread-app-eks-cluster"
+    cluster_name = var.cluster_name
     cluster_version = "1.30"
 
     vpc_id = module.vpc.vpc_id
@@ -49,13 +49,13 @@ module "eks" {
     eks_managed_node_groups = {
         default = {
             name           = "eks-node-group"
-            instance_types = ["t3.small"]
+            instance_types = [var.node_group_instance_type]
             ami_type       = "AL2_x86_64"
             capacity_type  = "ON_DEMAND"
 
-            min_size     = 1
-            max_size     = 2
-            desired_size = 1
+            min_size     = var.min_size
+            max_size     = var.max_size
+            desired_size = var.desired_size
 
             use_latest_ami_release_version = true
             disk_size                      = 20
