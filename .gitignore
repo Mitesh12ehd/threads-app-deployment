@@ -26,3 +26,6 @@
 **/crash.log
 
 *.pem
+
+# ansible
+/ansible/creds.yaml
