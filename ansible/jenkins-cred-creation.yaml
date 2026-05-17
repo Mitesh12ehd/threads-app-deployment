@@ -54,3 +54,14 @@
         - { id: "CLERK_SECRET_KEY", secret: "{{ CLERK_SECRET_KEY }}" }
         - { id: "NEXT_CLERK_WEBHOOK_SECRET", secret: "{{ NEXT_CLERK_WEBHOOK_SECRET }}" }
         - { id: "MONGODB_URL", secret: "{{ MONGODB_URL }}" }
+
+    - name: Create email credential
+      community.general.jenkins_credential:
+        url: "{{ jenkins_url }}"
+        jenkins_user: "{{ jenkins_user }}"
+        token: "{{ token_result.token }}" 
+        id: "gmail-smpt-credential"
+        type: "user_and_pass"
+        username: "{{ sender_email }}"
+        password: "{{ app_password }}"
+        state: present
