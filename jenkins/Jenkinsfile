@@ -110,4 +110,31 @@ pipeline{
             }
         }
     }
+    post{
+        failure{
+            emailext(
+                subject: "FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+
+                body: """
+                <h2>Build Failed</h2>
+
+                <p><b>Project:</b> ${env.JOB_NAME}</p>
+
+                <p><b>Build Number:</b> ${env.BUILD_NUMBER}</p>
+
+                <p><b>Build URL:</b>
+                <a href="${env.BUILD_URL}">
+                Open Build
+                </a></p>
+
+                <p><b>Console:</b>
+                <a href="${env.BUILD_URL}console">
+                Console Logs
+                </a></p>
+                """
+
+                to: "miteshchavda57@gmail.com"
+            )
+        }
+    }
 }
