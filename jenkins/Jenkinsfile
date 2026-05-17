@@ -131,7 +131,7 @@ pipeline{
                 <a href="${env.BUILD_URL}console">
                 Console Logs
                 </a></p>
-                """
+                """,
 
                 to: "miteshchavda57@gmail.com"
             )
