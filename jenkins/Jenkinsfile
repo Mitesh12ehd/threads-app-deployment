@@ -101,9 +101,13 @@ pipeline{
                         echo "Create external service"
                         kubectl apply --namespace ${NAMESPACE} -f kubernetes/thread-app-service.yaml
 
-                        echo "Check deployment and services"
+                        echo "Create ingress"
+                        kubectl apply --namespace ${NAMESPACE} -f kubernetes/ingress.yaml
+
+                        echo "Check deployment, services and ingress"
                         kubectl get deployments --namespace ${NAMESPACE}
                         kubectl get services --namespace ${NAMESPACE}
+                        kubectl get ingress --namespace ${NAMESPACE}
                         '''
                     }
                 }
