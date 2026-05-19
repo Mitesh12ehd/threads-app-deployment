@@ -86,3 +86,73 @@ module "eks" {
         ManagedBy   = "terraform"
     }
 }
+
+resource "aws_iam_policy" "alb_controller_policy" {
+    name = "AWSLoadBalancerControllerIAMPolicy"
+    policy = file("${path.module}/iam_service_account_policy.json")
+}
+
+module "alb_controller_irsa_role"{
+    source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
+    version = "5.39.0"
+
+    create_role = true
+    role_name = "AmazonEKSLoadBalancerControllerRole"
+    provider_url = replace(
+        module.eks.cluster_oidc_issuer_url,
+        "https://"  ,
+        ""
+    )
+
+    role_policy_arns = [
+        aws_iam_policy.alb_controller_policy.arn
+    ]
+
+    oidc_fully_qualified_subjects = [
+        "system:serviceaccount:kube-system:aws-load-balancer-controller"
+    ]
+}
+
+resource "kubernetes_service_account" "alb_controller" {
+    metadata {
+        name = "aws-load-balancer-controller"
+        namespace = "kube-system"
+        annotations = {
+            "eks.amazonaws.com/role-arn" = module.alb_controller_irsa_role.iam_role_arn
+        }
+    }
+}
+
+resource "helm_release" "aws_load_balancer_controller" {
+    name = "aws-load-balancer-controller"
+    repository = "https://aws.github.io/eks-charts"
+    chart = "aws-load-balancer-controller"
+    namespace = "kube-system"
+    depends_on = [ 
+        kubernetes_service_account.alb_controller 
+    ]
+    set {
+        name  = "clusterName"
+        value = module.eks.cluster_name
+    }
+
+    set {
+        name  = "serviceAccount.create"
+        value = "false"
+    }
+
+    set {
+        name  = "serviceAccount.name"
+        value = "aws-load-balancer-controller"
+    }
+
+    set {
+        name  = "region"
+        value = "ap-south-1"
+    }
+
+    set {
+        name  = "vpcId"
+        value = module.vpc.vpc_id
+    }
+}
