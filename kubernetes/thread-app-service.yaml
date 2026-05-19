@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: thread-app-service
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: thread-app
   ports:
