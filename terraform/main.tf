@@ -48,3 +48,16 @@ module "eks" {
     max_size = var.max_size
     desired_size = var.desired_size
 }
+
+module "jenkins-monitoring" {
+    source = "./modules/jenkins-monitoring"
+
+    # sns
+    alert_email = var.alert_email
+
+    # cloudwatch-agent
+    jenkins_log_group = 
+    syslog_log_group =
+    secure_log_group =
+    docker_log_group =
+}

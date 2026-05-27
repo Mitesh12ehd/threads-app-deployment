@@ -7,3 +7,7 @@ output "jenkins-instance-public-ip"{
 output "ecr-repository-uri" {
     value = module.ecr.ecr-repository-uri
 }
+
+# sns
+output "critical_topic_arn" { value = module.jenkins-monitoring.critical_topic_arn }
+output "warning_topic_arn"  { value = module.jenkins-monitoring.warning_topic_arn }
