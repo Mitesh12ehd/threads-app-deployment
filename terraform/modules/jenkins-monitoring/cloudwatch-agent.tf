@@ -1,3 +1,11 @@
+# To Store cloudwatch agent configuration json
+# Run this json with cloudwatch agent on ec2
+
+variable "jenkins_log_group" {}
+variable "syslog_log_group" {}
+variable "secure_log_group" {}
+variable "docker_log_group" {}
+
 locals {
     agent_config = jsonencode({
         agent = {
@@ -81,3 +89,6 @@ resource "aws_ssm_parameter" "cw+agent_config" {
         Name = "jenkins-cloudwatch-agent-config"
     }
 }
+
+output "ssm_parameter_name" { value = aws_ssm_parameter.cw_agent_config.name }
+output "ssm_parameter_arn"  { value = aws_ssm_parameter.cw_agent_config.arn }
