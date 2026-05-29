@@ -1,13 +1,6 @@
 variable "ec2_instance_id" {}
-
 variable "critical_sns_arn" {}
 variable "warning_sns_arn" {}
-
-variable "jenkins_log_group" {}
-variable "syslog_log_group" {}
-variable "secure_log_group" {}
-variable "docker_log_group" {}
-
 locals {
     custom_ns = "jenkins/OperationalMetrics"
     cwa_ns = "CWAgent"

@@ -103,6 +103,9 @@ resource "aws_instance" "jenkins-server" {
     associate_public_ip_address = true
     key_name = "jenkins-key-pair"
 
+    # to attach role for monitoring
+    iam_instance_profile = aws_iam_instance_profile.cw_agent.name
+
     tags = {
         Name = "jenkins-server"
     }
