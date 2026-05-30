@@ -1,5 +1,3 @@
-variable "alert_email"{}
-
 resource "aws_sns_topic" "critical" {
     name = "jenkins-alert-critical"
     
@@ -26,6 +24,3 @@ resource "aws_sns_topic_subscription" "warning_email" {
     protocol = "email"
     endpoint = var.alert_email
 }
-
-output "critical_topic_arn" { value = aws_sns_topic.critical.arn }
-output "warning_topic_arn"  { value = aws_sns_topic.warning.arn }

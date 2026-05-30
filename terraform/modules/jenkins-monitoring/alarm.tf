@@ -1,11 +1,3 @@
-variable "ec2_instance_id" {}
-variable "critical_sns_arn" {}
-variable "warning_sns_arn" {}
-locals {
-    custom_ns = "jenkins/OperationalMetrics"
-    cwa_ns = "CWAgent"
-}
-
 #### Critical alarm ####
 resource "aws_cloudwatch_metric_alarm" "ec2_status_check" {
     alarm_name = "jenkins-critical-ec2-status-check-failed"
@@ -23,8 +15,8 @@ resource "aws_cloudwatch_metric_alarm" "ec2_status_check" {
         InstanceId = var.ec2_instance_id
     }
 
-    alarm_actions = [var.critical_sns_arn]
-    ok_actions = [var.critical_sns_arn]
+    alarm_actions = [local.critical_sns_arn]
+    ok_actions = [local.critical_sns_arn]
 
     tags = {
         Name = "jenkins-critical-ec2-status-check"
@@ -44,8 +36,8 @@ resource "aws_cloudwatch_metric_alarm" "container_not_running" {
     threshold = 1
     treat_missing_data = "breaching"
 
-    alarm_actions = [var.critical_sns_arn]
-    ok_actions = [var.critical_sns_arn]
+    alarm_actions = [local.critical_sns_arn]
+    ok_actions = [local.critical_sns_arn]
 
     tags = {
         Name = "jenkins-critical-container-not-running"
@@ -65,8 +57,8 @@ resource "aws_cloudwatch_metric_alarm" "jenkins_http_down" {
     threshold = 1
     treat_missing_data = "breaching"
 
-    alarm_actions = [var.critical_sns_arn]
-    ok_actions = [var.critical_sns_arn]
+    alarm_actions = [local.critical_sns_arn]
+    ok_actions = [local.critical_sns_arn]
 
     tags = {
         Name = "jenkins-critical-jenkins-http"
@@ -92,8 +84,8 @@ resource "aws_cloudwatch_metric_alarm" "disk_critical" {
         fstype = "xfs"
     }
 
-    alarm_actions = [var.critical_sns_arn]
-    ok_actions  = [var.critical_sns_arn]
+    alarm_actions = [local.critical_sns_arn]
+    ok_actions  = [local.critical_sns_arn]
 
     tags = {
         Name = "jenkins-critical-disk"
@@ -117,8 +109,8 @@ resource "aws_cloudwatch_metric_alarm" "memory_critical" {
         InstanceId = var.ec2_instance_id
     }
 
-    alarm_actions = [var.critical_sns_arn]
-    ok_actions = [var.critical_sns_arn]
+    alarm_actions = [local.critical_sns_arn]
+    ok_actions = [local.critical_sns_arn]
 
     tags = {
         Name = "jenkins-critical-memory"
@@ -142,8 +134,8 @@ resource "aws_cloudwatch_metric_alarm" "cpu_warning" {
         InstanceId = var.ec2_instance_id
     }
 
-    alarm_actions = [var.warning_sns_arn]
-    ok_actions = [var.warning_sns_arn]
+    alarm_actions = [local.warning_sns_arn]
+    ok_actions = [local.warning_sns_arn]
 
     tags = {
         Name = "jenkins-warning-cpu"
@@ -168,8 +160,8 @@ resource "aws_cloudwatch_metric_alarm" "memory_warning" {
         InstanceId = var.ec2_instance_id
     }
 
-    alarm_actions = [var.warning_sns_arn]
-    ok_actions = [var.warning_sns_arn]
+    alarm_actions = [local.warning_sns_arn]
+    ok_actions = [local.warning_sns_arn]
 
     tags = {
         Name = "jenkins-warning-memory"
@@ -195,8 +187,8 @@ resource "aws_cloudwatch_metric_alarm" "disk_warning" {
         fstype     = "xfs"
     }
 
-    alarm_actions = [var.warning_sns_arn]
-    ok_actions    = [var.warning_sns_arn]
+    alarm_actions = [local.warning_sns_arn]
+    ok_actions    = [local.warning_sns_arn]
 
     tags = {
         Name = "jenkins-warning-disk"
@@ -217,8 +209,8 @@ resource "aws_cloudwatch_metric_alarm" "container_restarts" {
     threshold = 3
     treat_missing_data = "notBreaching"
 
-    alarm_actions = [var.warning_sns_arn]
-    ok_actions = [var.warning_sns_arn]
+    alarm_actions = [local.warning_sns_arn]
+    ok_actions = [local.warning_sns_arn]
 
     tags = {
         Name = "jenkins-warning-container-restarts"
@@ -238,8 +230,8 @@ resource "aws_cloudwatch_metric_alarm" "ssh_auth_failures" {
     threshold = 10
     treat_missing_data = "notBreaching"
 
-    alarm_actions = [var.warning_sns_arn]
-    ok_actions = [var.warning_sns_arn]
+    alarm_actions = [local.warning_sns_arn]
+    ok_actions = [local.warning_sns_arn]
 
     tags = {
         Name = "jenkins-warning-ssh-failures"

@@ -1,23 +1,3 @@
-variable "aws_region" {}           
-variable "ec2_instance_id" {}
-
-variable "jenkins_log_group" {}
-variable "syslog_log_group" {}        
-variable "secure_log_group" {} 
-variable "docker_log_group"{}
-
-variable "jenkins_error_metric_name"{}
-variable "ssh_failure_metric_name"{}
-variable "oom_event_metric_name"{}
-variable "docker_error_metric_name"{}
-
-variable "metric_namespace"{}
-
-locals {
-    custom_ns = var.metric_namespace
-    cwa_ns = "CWAgent"
-    ec2_ns = "AWS/EC2"
-}
 
 # Needed to build alarm ARNs for the alarm widget
 data "aws_caller_identity" "current" {}
@@ -38,8 +18,8 @@ resource "aws_cloudwatch_dashboard" "infrastructure_health" {
                 properties = {
                     title = "CPU Utilization (%)"
                     view = "timeSeries"
-                    state = "Average"
-                    period = "300"
+                    stat = "Average"
+                    period = 300
                     metrics = [
                         [
                             local.ec2_ns,
@@ -292,7 +272,7 @@ resource "aws_cloudwatch_dashboard" "logs_failures" {
                     view   = "timeSeries"
                     stat   = "Sum"
                     period = 300
-                    metrics = [[local.custom_ns, var.jenkins_error_metric_name]]
+                    metrics = [[local.custom_ns, local.jenkins_error_metric_name]]
                     region = var.aws_region
                 }
             },
@@ -307,7 +287,7 @@ resource "aws_cloudwatch_dashboard" "logs_failures" {
                     view   = "timeSeries"
                     stat   = "Sum"
                     period = 300
-                    metrics = [[local.custom_ns, var.docker_error_metric_name]]
+                    metrics = [[local.custom_ns, local.docker_error_metric_name]]
                     region = var.aws_region
                 }
             },
@@ -324,7 +304,7 @@ resource "aws_cloudwatch_dashboard" "logs_failures" {
                     view   = "timeSeries"
                     stat   = "Sum"
                     period = 300
-                    metrics = [[local.custom_ns, var.ssh_failure_metric_name]]
+                    metrics = [[local.custom_ns, local.ssh_failure_metric_name]]
                     annotations = {
                         horizontal = [{ label = "Warning threshold", value = 10, color = "#ff7f0e" }]
                     }
@@ -342,7 +322,7 @@ resource "aws_cloudwatch_dashboard" "logs_failures" {
                     view   = "timeSeries"
                     stat   = "Sum"
                     period = 300
-                    metrics = [[local.custom_ns, var.oom_event_metric_name]]
+                    metrics = [[local.custom_ns, local.oom_event_metric_name]]
                     annotations = {
                         horizontal = [{ label = "Any OOM = investigate", value = 1, color = "#d62728" }]
                     }
@@ -361,7 +341,7 @@ resource "aws_cloudwatch_dashboard" "logs_failures" {
                     title   = "Recent Jenkins ERROR lines (last 1 hour)"
                     view    = "table"
                     region  = var.aws_region
-                    query   = "SOURCE '${var.jenkins_log_group}' | fields @timestamp, @message | filter @message like /ERROR/ | sort @timestamp desc | limit 50"
+                    query   = "SOURCE '${local.jenkins_log_group}' | fields @timestamp, @message | filter @message like /ERROR/ | sort @timestamp desc | limit 50"
                     period  = 3600
                 }
             }

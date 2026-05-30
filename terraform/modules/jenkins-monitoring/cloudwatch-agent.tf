@@ -1,11 +1,6 @@
 # To Store cloudwatch agent configuration json
 # Run this json with cloudwatch agent on ec2
 
-variable "jenkins_log_group" {}
-variable "syslog_log_group" {}
-variable "secure_log_group" {}
-variable "docker_log_group" {}
-
 locals {
     agent_config = jsonencode({
         agent = {
@@ -15,8 +10,8 @@ locals {
 
         metrics = {
             namespace = "CWAgent"
-            append_dimension = {
-                InstanceId = "$${{aws:InstanceId}}"
+            append_dimensions = {
+                InstanceId = "$${aws:InstanceId}"
             }
             metrics_collected = {
                 mem = {
@@ -43,7 +38,7 @@ locals {
                         # Jenkins container logs via Docker log file
                         {
                             file_path               = "/var/lib/docker/containers/*/*.log"
-                            log_group_name          = var.jenkins_log_group
+                            log_group_name          = local.jenkins_log_group
                             log_stream_name         = "jenkins-container-{instance_id}"
                             multi_line_start_pattern = "^[0-9]{4}-[0-9]{2}-[0-9]{2}"
                             retention_in_days       = 30
@@ -52,7 +47,7 @@ locals {
                         # Docker daemon log (journald → file export or daemon log)
                         {
                             file_path         = "/var/log/docker"
-                            log_group_name    = var.docker_log_group
+                            log_group_name    = local.docker_log_group
                             log_stream_name   = "docker-daemon-{instance_id}"
                             retention_in_days = 14
                         },
@@ -60,7 +55,7 @@ locals {
                         # SSH authentication log — Amazon Linux: /var/log/secure; Ubuntu: /var/log/auth.log
                         {
                             file_path         = "/var/log/secure"
-                            log_group_name    = var.secure_log_group
+                            log_group_name    = local.secure_log_group
                             log_stream_name   = "ssh-auth-{instance_id}"
                             retention_in_days = 30
                         },
@@ -68,7 +63,7 @@ locals {
                         # Syslog — catches OOM killer events
                         {
                             file_path         = "/var/log/messages"
-                            log_group_name    = var.syslog_log_group
+                            log_group_name    = local.syslog_log_group
                             log_stream_name   = "syslog-{instance_id}"
                             retention_in_days = 14
                         }
@@ -79,7 +74,7 @@ locals {
     })
 }
 
-resource "aws_ssm_parameter" "cw+agent_config" {
+resource "aws_ssm_parameter" "cw_agent_config" {
     name = "/AmazonCloudWatch-jenkins-agent-config"
     description = "CloudWatch Agent configuration for Jenkins monitoring on jenkins"
     type = "String"

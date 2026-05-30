@@ -48,3 +48,10 @@ module "eks" {
     max_size = var.max_size
     desired_size = var.desired_size
 }
+
+module jenkins-monitoring {
+    source = "./modules/jenkins-monitoring"
+    alert_email = var.alert_email
+    ec2_instance_id = module.jenkins.jenkins-instance-id
+    aws_region = var.aws_region
+}

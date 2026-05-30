@@ -14,3 +14,7 @@ variable node_group_instance_type {}
 variable min_size{}
 variable max_size{}
 variable desired_size{}
+
+# jenkins-monitoring
+variable alert_email {}
+variable aws_region {}

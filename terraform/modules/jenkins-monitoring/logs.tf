@@ -1,7 +1,3 @@
-locals {
-    metric_namespace = "jenkins/OperationalMetrics"
-}
-
 resource "aws_cloudwatch_log_group" "jenkins" {
     name = "/jenkins/logs"
     retention_in_days = 30
@@ -47,7 +43,7 @@ resource "aws_cloudwatch_log_metric_filter" "jenkins_errors" {
 
     metric_transformation {
         name = "JenkinsErrorCount"
-        namespace = local.metric_namespace
+        namespace = local.custom_ns
         value = "1"
         default_value = "0"
         unit = "Count"
@@ -59,11 +55,13 @@ resource "aws_cloudwatch_log_metric_filter" "jenkins_errors" {
 resource "aws_cloudwatch_log_metric_filter" "ssh_failures" {
     name = "jenkins-ssh-auth-failures"
     log_group_name = aws_cloudwatch_log_group.secure.name
-    pattern = "\"Failed password\" || \"Invalid user\" || \"authentication failure\""
+    pattern = "?\"Failed password\" ?\"Invalid user\" ?\"authentication failure\""
+    
+    #"\"Failed password\" || \"Invalid user\" || \"authentication failure\""
 
     metric_transformation {
         name = "SSHAuthFailureCount"
-        namespace = local.metric_namespace
+        namespace = local.custom_ns
         value = "1"
         default_value = "0"
         unit = "Count"
@@ -75,11 +73,11 @@ resource "aws_cloudwatch_log_metric_filter" "ssh_failures" {
 resource "aws_cloudwatch_log_metric_filter" "oom_events" {
     name = "jenkins-oom-killer-events"
     log_group_name = aws_cloudwatch_log_group.syslog.name
-    pattern = "\"Out of memory\" || \"OOM killer\" || \"oom_kill_process\""
+    pattern = "?\"Out of memory\" ?\"OOM killer\" ?\"oom_kill_process\""
 
     metric_transformation {
         name = "OOMKillerEventCount"
-        namespace = local.metric_namespace
+        namespace = local.custom_ns
         value = "1"
         default_value = "0"
         unit  = "Count"
@@ -91,24 +89,13 @@ resource "aws_cloudwatch_log_metric_filter" "oom_events" {
 resource "aws_cloudwatch_log_metric_filter" "docker_errors" {
     name = "jenkins-docker-daemon-errors"
     log_group_name = aws_cloudwatch_log_group.docker.name
-    pattern = "\"Error response from daemon\" || \"level=error\" || \"level=fatal\""
+    pattern = "?\"Error response from daemon\" ?\"level=error\" ?\"level=fatal\""
 
     metric_transformation {
         name = "DockerDaemonErrorCount"
-        namespace = local.metric_namespace
+        namespace = local.custom_ns
         value = "1"
         default_value = "0"
         unit = "Count"
     }
 }
-
-output "jenkins_log_group_name" { value = aws_cloudwatch_log_group.jenkins.name }
-output "docker_log_group_name" { value = aws_cloudwatch_log_group.docker.name }
-output "secure_log_group_name" { value = aws_cloudwatch_log_group.secure.name }
-output "syslog_log_group_name" { value = aws_cloudwatch_log_group.syslog.name }
-
-output "metric_namespace" { value = local.metric_namespace}
-output "jenkins_error_metric_name" { value = aws_cloudwatch_log_metric_filter.jenkins_errors.metric_transformation[0].name }
-output "ssh_failure_metric_name" { value = aws_cloudwatch_log_metric_filter.ssh_failures.metric_transformation[0].name }
-output "oom_event_metric_name" { value = aws_cloudwatch_log_metric_filter.oom_events.metric_transformation[0].name }
-output "docker_error_metric_name"  { value = aws_cloudwatch_log_metric_filter.docker_errors.metric_transformation[0].name }

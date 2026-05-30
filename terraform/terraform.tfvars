@@ -12,3 +12,7 @@ node_group_instance_type = "t3.small"
 min_size = 1
 max_size = 2
 desired_size = 1
+
+# jenkins-monitoring
+alert_email = "miteshchavda57@gmail.com"
+aws_region = "ap-south-1"
