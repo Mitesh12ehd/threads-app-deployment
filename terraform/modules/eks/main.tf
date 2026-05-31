@@ -121,6 +121,8 @@ resource "kubernetes_service_account" "alb_controller" {
             "eks.amazonaws.com/role-arn" = module.alb_controller_irsa_role.iam_role_arn
         }
     }
+
+    depends_on = [module.eks]
 }
 
 resource "helm_release" "aws_load_balancer_controller" {
