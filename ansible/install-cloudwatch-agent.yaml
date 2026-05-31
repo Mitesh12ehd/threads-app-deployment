@@ -1,0 +1,57 @@
+---
+- name: Install and start cloudwatch agent
+  hosts: jenkins_server
+  become: true
+  tasks:
+    - name: Install cloudwatch agent
+      ansible.builtin.yum:
+        name: amazon-cloudwatch-agent
+        update_cache: true
+        state: present
+    
+    - name: Fetch cloudwatch agent config and start agent 
+      ansible.builtin.command:
+        cmd: >
+          /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl
+          -a fetch-config
+          -m ec2
+          -s
+          -c ssm:/AmazonCloudWatch-jenkins-agent-config
+        register: cwagent_result
+        changed_when: true
+        
+    - name: Ensure CloudWatch Agent service is enabled and running
+      ansible.builtin.systemd:
+        name: amazon-cloudwatch-agent
+        enabled: true
+        state: started
+
+- name: Install the custom metrics cron job
+  hosts: jenkins_server
+  become: true 
+  tasks:  
+    - name: Copy the jenkins metrics script 
+      ansible.builtin.copy:
+        src: push-jenkins-metrics.sh
+        dest: /usr/local/bin/push-jenkins-metrics.sh
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Create cron file for jenkins metrics push 
+      ansible.builtin.copy: 
+        dest: /etc/cron.d/push-jenkins-metrics
+        owner: root 
+        group: root 
+        mode: "0644"
+        content: |
+            * * * * * root /usr/local/bin/push-jenkins-metrics.sh >> /var/log/push-jenkins-metrics.log 2>&1
+
+    - name: Run metrics once 
+      ansible.builtin.command:
+        cmd: /usr/local/bin/push-jenkins-metrics.sh
+      register: metrics_script
+
+    - name: Show metrics output 
+      ansible.builtin.debug:
+        var: metrics_script.stdout

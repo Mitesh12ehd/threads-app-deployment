@@ -20,7 +20,7 @@ locals {
                 }
                 disk = {
                     resources = ["/", "/var"]
-                    measurement = ["disk_used_percent", "disk_inodes_used_percent"]
+                    measurement = ["disk_used_percent"]
                     metrics_collection_interval = 60
                     drop_device = true
                 }
