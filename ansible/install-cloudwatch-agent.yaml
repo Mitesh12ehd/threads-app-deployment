@@ -17,8 +17,8 @@
           -m ec2
           -s
           -c ssm:/AmazonCloudWatch-jenkins-agent-config
-        register: cwagent_result
-        changed_when: true
+      register: cwagent_result
+      changed_when: true
         
     - name: Ensure CloudWatch Agent service is enabled and running
       ansible.builtin.systemd:
@@ -37,6 +37,18 @@
         owner: root
         group: root
         mode: "0755"
+
+    - name: Install cron package
+      ansible.builtin.yum:  
+        name: cronie
+        state: present
+        update_cache: true
+
+    - name: Enable cron service
+      ansible.builtin.systemd:
+        name: crond
+        enabled: true
+        state: started
 
     - name: Create cron file for jenkins metrics push 
       ansible.builtin.copy: 
