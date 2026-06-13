@@ -378,3 +378,51 @@ cd ansible
 
 ansible-playbook install-cloudwatch-agent.yaml
 ```
+
+## Destroy Infrastructure
+
+Follow the steps below to safely remove all deployed resources.
+
+### 1. Delete Load Balancer
+
+Before destroying the infrastructure, delete the AWS Load Balancer created by the Kubernetes service.
+
+You can delete it using:
+
+- AWS Console
+- AWS CLI
+
+Verify that the load balancer has been fully removed before proceeding.
+
+### 2. Destroy Application Infrastructure
+
+Destroy the application infrastructure created by Terraform, including:
+
+- Amazon ECR repositories
+- Jenkins EC2 instance
+- Amazon EKS cluster
+- CloudWatch monitoring resources
+
+```bash
+cd terraform
+
+terraform destroy
+```
+
+Review the execution plan and confirm the destroy operation.
+
+### 3. Destroy Terraform Backend Infrastructure
+
+After all application resources have been removed, destroy the Terraform backend resources used for remote state storage.
+
+```bash
+cd terraform/s3-backend
+
+terraform destroy
+```
+---
+## Future Optimizations
+
+1. Monitoring setup for EKS control plane and Application running on node groups
+
+2. Add functional tests in Jenkins pipeline  
